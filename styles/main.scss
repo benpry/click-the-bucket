@@ -1,0 +1,58 @@
+@import "~jspsych/css/jspsych.css";
+
+.jspsych-display-element {
+    background-color: #ffffff;
+    font-size: 20px;
+}
+
+#jspsych-html-button-response-btngroup {
+    margin-top: 2rem;
+}
+
+.bucket {
+    width: 150px;
+    margin: 0 1rem;
+}
+
+.coinRow {
+    display: grid;
+    gap: 1rem;
+    margin: auto;
+}
+
+.coin {
+    width: 100px;
+    margin: auto;
+}
+
+.bucketWrapper {
+    display: inline-block;
+    margin: 0px 8px;
+    text-align: center;
+}
+
+.consent-text {
+    width: 80ch;
+    text-align: justify;
+}
+
+.instructions-text {
+    width: 60ch;
+    text-align: justify;
+}
+
+.instructions-img {
+    width: 60ch;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
+.bold {
+    font-weight: bold;
+}
