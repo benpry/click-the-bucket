@@ -13,8 +13,16 @@
     "@jspsych/plugin-instructions": "^1.1.4",
     "@jspsych/plugin-preload": "^1.1.2",
     "@jspsych/plugin-survey-text": "^1.1.3",
+    "dompurify": "^3.0.11",
+    "file-system": "^2.2.2",
+    "fs": "^0.0.1-security",
+    "html-loader": "^5.0.0",
     "jquery": "^3.7.1",
-    "jspsych": "^7.3.1"
+    "jsdom": "^24.0.0",
+    "jspsych": "^7.3.1",
+    "marked": "^12.0.1",
+    "remark-html": "^16.0.1",
+    "remark-loader": "^6.0.0"
   },
   "devDependencies": {
     "jspsych-builder": "^4.4.0"
