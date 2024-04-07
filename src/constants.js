@@ -11,7 +11,7 @@ instructionsRenderer.paragraph = (text) =>
   `<p class="instructions-text">${text}</p>`;
 
 export const bucketHTML = `
-<img src="assets/%choice%-bucket.svg", class="bucket">
+<img src="assets/images/%choice%-bucket.svg", class="bucket">
 `;
 
 export const formatFeedback = (
@@ -39,7 +39,7 @@ export const formatFeedback = (
     <div class = "coinRow" style="grid-template-columns:repeat(${
       allBuckets.length
     }, 1fr);width:calc(196 * ${allBuckets.length});">
-    <img src="assets/coin.svg" class="coin" style="grid-column:${
+    <img src="assets/images/coin.svg" class="coin" style="grid-column:${
       allBuckets.indexOf(lastCorrectBucket) + 1
     }">
     </div>
@@ -51,15 +51,15 @@ export const formatFeedback = (
 };
 
 export const nTrialsByCondition = {
-  0: 20,
-  1: 20,
-  2: 20,
-  3: 20,
+  0: 3,
+  1: 3,
+  2: 3,
+  3: 3,
 };
 
 export const messageConditionTimes = {
   0: 5,
-  1: 20,
+  1: 10,
   2: 60,
 };
 
@@ -90,11 +90,9 @@ export const consentText = marked(consentMd.default, {
   renderer: consentRenderer,
 });
 
-console.log("instructions md", instructionsMd.default);
 const instructionsHtml = marked(instructionsMd.default, {
   renderer: instructionsRenderer,
 });
-console.log("instructions html", instructionsHtml);
 
 export const instructionPages = instructionsHtml.split("<hr>");
 

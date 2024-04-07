@@ -24,7 +24,13 @@ import {
   consentText,
   testPhaseInstructions,
 } from "./constants";
-import { messages } from "./messages";
+import {
+  assignToChain,
+  freeChain,
+  assignToChainNoBusy,
+  sendMessage,
+  updateReads,
+} from "./api";
 import { startTimer } from "./timer";
 import { sampleBucket, renderMessage } from "./utils";
 import { range } from "./utils";
@@ -42,15 +48,26 @@ export async function run({
   title,
   version,
 }) {
+  // Chains to assign participants to
+  let chain = null;
+
   const jsPsych = initJsPsych({
     on_finish: function (data) {
       proliferate.submit({
         trials: data.values(),
       });
     },
+    on_close: () => {
+      if (chain != null) {
+        if (chain.busy) {
+          freeChain(chain._id);
+        }
+      }
+    },
   });
+
   const condition = jsPsych.data.getURLVariable("condition");
-  const messageCondition = jsPsych.data.getURLVariable("messageCondition");
+  const messageCondition = jsPsych.data.getURLVariable("mC");
   const doLearning = jsPsych.data.getURLVariable("doL");
   const receiveMessage = jsPsych.data.getURLVariable("recM");
   const writeMessage = jsPsych.data.getURLVariable("wM");
@@ -63,8 +80,7 @@ export async function run({
   timeline.push({
     type: PreloadPlugin,
     images: assetPaths.images,
-    audio: assetPaths.audio,
-    video: assetPaths.video,
+    audio: assetPaths.instructions,
   });
 
   timeline.push({
@@ -78,14 +94,30 @@ export async function run({
     type: InstructionsPlugin,
     pages: instructionPages,
     show_clickable_nav: true,
+    on_load: () => {
+      if (writeMessage) {
+        assignToChain(condition).then((c) => {
+          chain = c;
+        });
+      } else {
+        assignToChainNoBusy(condition).then((c) => {
+          console.log("updating chain");
+          chain = c;
+        });
+      }
+    },
   });
 
   if (receiveMessage) {
-    const messageNum = jsPsych.data.getURLVariable("mN");
-    const message = messages[messageNum];
     timeline.push({
       type: HtmlButtonResponse,
-      stimulus: renderMessage(message),
+      stimulus: () => {
+        return chain == null
+          ? "Loading...."
+          : chain.messages.length == 0
+          ? "You are the first participant in your chain, so there is not a message for you to read."
+          : renderMessage(chain.messages[chain.messages.length - 1]);
+      },
       choices: ["Continue"],
     });
   }
@@ -144,6 +176,8 @@ export async function run({
       trial_duration: 5000,
     };
     timeline.push(writeMessageInstructions);
+    console.log("message writing time");
+    console.log(messageWritingTime);
     const writeMessageTrial = {
       type: HtmlSurveyText,
       questions: [
@@ -156,6 +190,11 @@ export async function run({
         },
       ],
       trial_duration: messageWritingTime * 1000,
+      on_finish: function (data) {
+        console.log("write message data");
+        console.log(data);
+        sendMessage(chain._id, data.response.message);
+      },
     };
     timeline.push(writeMessageTrial);
   }
