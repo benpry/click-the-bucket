@@ -55,9 +55,12 @@ export async function run({
 
   const jsPsych = initJsPsych({
     on_finish: function (data) {
-      proliferate.submit({
-        trials: data.values(),
-      });
+      if (data.last(1).values()[0].failed) {
+      } else {
+        proliferate.submit({
+          trials: data.values(),
+        });
+      }
     },
     on_close: () => {
       if (chain != null) {
@@ -100,12 +103,25 @@ export async function run({
     on_load: () => {
       if (writeMessage) {
         assignToChain(condition).then((c) => {
-          chain = c;
+          if (c == 404) {
+            jsPsych.endExperiment(
+              "Unfortunately there is no space in the experiment at this time. We apologize for the inconvenience.",
+              { failed: true, failedReason: "noFreeChains" },
+            );
+          } else {
+            chain = c;
+          }
         });
       } else {
         assignToChainNoBusy(condition).then((c) => {
-          console.log("updating chain");
-          chain = c;
+          if (c == 404) {
+            jsPsych.endExperiment(
+              "Unfortunately there is no space in the experiment at this time. We apologize for the inconvenience.",
+              { failed: true, failedReason: "noFreeChains" },
+            );
+          } else {
+            chain = c;
+          }
         });
       }
     },
@@ -121,6 +137,7 @@ export async function run({
           ? "You are the first participant in your chain, so there is not a message for you to read."
           : renderMessage(chain.messages[chain.messages.length - 1]);
       },
+      data: { phase: "readMessage" },
       choices: ["Continue"],
     });
   }
@@ -138,7 +155,10 @@ export async function run({
         stimulus: "Click the bucket where you think the coin is",
         choices: buckets,
         data: function () {
-          return { correctBucket: jsPsych.timelineVariable("correctBucket") };
+          return {
+            correctBucket: jsPsych.timelineVariable("correctBucket"),
+            phase: "learning",
+          };
         },
         button_html: bucketHTML,
       },
@@ -193,6 +213,7 @@ export async function run({
       on_finish: function (data) {
         sendMessage(chain._id, data.response.message);
       },
+      data: { phase: "writeMessage" },
     };
     timeline.push(writeMessageTrial);
   }
@@ -207,6 +228,7 @@ export async function run({
   timeline.push({
     type: ElicitDistributionPlugin,
     condition: condition,
+    data: { phase: "test" },
   });
 
   const postExperimentSurvey = {

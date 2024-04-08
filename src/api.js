@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://35.87.51.189:3000";
 
 export async function assignToChain(condition) {
   const response = await fetch(`${API_BASE_URL}/assign/${condition}`, {
