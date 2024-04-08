@@ -102,7 +102,7 @@ export async function run({
     show_clickable_nav: true,
     on_load: () => {
       if (writeMessage) {
-        assignToChain(condition).then((c) => {
+        assignToChain(messageCondition).then((c) => {
           if (c == 404) {
             jsPsych.endExperiment(
               "Unfortunately there is no space in the experiment at this time. We apologize for the inconvenience.",
@@ -137,7 +137,13 @@ export async function run({
           ? "You are the first participant in your chain, so there is not a message for you to read."
           : renderMessage(chain.messages[chain.messages.length - 1]);
       },
-      data: { phase: "readMessage" },
+      data: () => {
+        return {
+          phase: "readMessage",
+          chainId: chain._id,
+          messageReceived: chain.messages[chain.messages.length - 1],
+        };
+      },
       choices: ["Continue"],
     });
   }
