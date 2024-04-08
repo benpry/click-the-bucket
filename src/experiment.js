@@ -95,7 +95,7 @@ export async function run({
 
   timeline.push({
     type: InstructionsPlugin,
-    pages: getInstructionPages(messageWritingTime),
+    pages: getInstructionPages(writeMessage, messageWritingTime),
     show_clickable_nav: true,
     on_load: () => {
       if (writeMessage) {

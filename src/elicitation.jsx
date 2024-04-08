@@ -24,15 +24,15 @@ function argmax(arr) {
 }
 
 function getDirichletBounds(probs, n, nBuckets) {
+  console.log("n", n);
   const bounds = probs.map((p) => {
     if (p == 0) {
       return [0, 0];
     } else if (p == 1) {
       return [1, 1];
     } else {
-      const alpha = p * (n + nBuckets - 1);
-      const beta = (1 - p) * (n + nBuckets - 1);
-      console.log("alpha, beta", alpha, beta);
+      const alpha = p * n;
+      const beta = (1 - p) * n;
       return [
         jStat.beta.inv(0.025, alpha, beta),
         jStat.beta.inv(0.975, alpha, beta),
@@ -48,7 +48,7 @@ export default function Elicitation(props) {
   const nBuckets = bucketNames.length;
 
   const [probs, updateProbs] = useState(Array(nBuckets).fill(1 / nBuckets));
-  const [conf, updateConf] = useState(1);
+  const [conf, updateConf] = useState(nBuckets);
 
   const handleProbChange = (i, val) => {
     let newProbs = [...probs];
@@ -126,8 +126,8 @@ export default function Elicitation(props) {
           key={"conf"}
           className="jspsych-slider conf-slider"
           type="range"
-          min="1"
-          max="25"
+          min={nBuckets}
+          max="50"
           value={conf}
           onChange={(e) => {
             const newConf = e.target.value;

@@ -1,6 +1,7 @@
 import { marked } from "marked";
 const consentMd = require("../assets/instructions/consent.md");
-const instructionsMd = require("../assets/instructions/main-instructions.md");
+const teacherInstructionsMd = require("../assets/instructions/teacher-instructions.md");
+const learnerInstructionsMd = require("../assets/instructions/learner-instructions.md");
 const testPhaseInstructionsMd = require("../assets/instructions/test-phase-instructions.md");
 const writeMessageMd = require("../assets/instructions/write-message-instructions.md");
 
@@ -57,16 +58,16 @@ export const formatFeedback = (
 };
 
 export const nTrialsByCondition = {
-  0: 3,
-  1: 3,
-  2: 3,
-  3: 3,
+  0: 5,
+  1: 5,
+  2: 5,
+  3: 5,
 };
 
 export const messageConditionTimes = {
   0: 5,
   1: 10,
-  2: 60,
+  2: 30,
 };
 
 export const bucketsByCondition = {
@@ -96,11 +97,24 @@ export const consentText = marked(eval("`" + consentMd.default + "`"), {
   renderer: consentRenderer,
 });
 
-export const getInstructionPages = (messageWritingTime) => {
-  const instructionsHtml = marked(eval("`" + instructionsMd.default + "`"), {
-    renderer: instructionsRenderer,
-  });
-  return instructionsHtml.split("<hr>");
+export const getInstructionPages = (writeMessage, messageWritingTime) => {
+  if (writeMessage == 1) {
+    const instructionsHtml = marked(
+      eval("`" + teacherInstructionsMd.default + "`"),
+      {
+        renderer: instructionsRenderer,
+      },
+    );
+    return instructionsHtml.split("<hr>");
+  } else {
+    const instructionsHtml = marked(
+      eval("`" + learnerInstructionsMd.default + "`"),
+      {
+        renderer: instructionsRenderer,
+      },
+    );
+    return instructionsHtml.split("<hr>");
+  }
 };
 
 export const testPhaseInstructions = marked(testPhaseInstructionsMd.default, {

@@ -1,5 +1,3 @@
-You will now complete the test phase. Buckets will appear on the screen and you should click the bucket where you think the coin is.
-
-There will be a one second delay between trials.
+You will now complete the prediction phase. You will be asked to report what you think the probability of the coin landing in each bucket is.
 
 Press 'Begin' to start the test phase.
