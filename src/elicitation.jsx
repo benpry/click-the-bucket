@@ -1,0 +1,156 @@
+import React from "react";
+import { range } from "./utils";
+import { bucketsByCondition } from "./constants";
+import { useState } from "react";
+var { jStat } = require("jstat");
+
+function argmax(arr) {
+  // from this stackexchange answer: https://stackoverflow.com/a/11301464
+  if (arr.length === 0) {
+    return -1;
+  }
+
+  var max = arr[0];
+  var maxIndex = 0;
+
+  for (var i = 1; i < arr.length; i++) {
+    if (arr[i] > max) {
+      maxIndex = i;
+      max = arr[i];
+    }
+  }
+
+  return maxIndex;
+}
+
+function getDirichletBounds(probs, n, nBuckets) {
+  const bounds = probs.map((p) => {
+    if (p == 0) {
+      return [0, 0];
+    } else if (p == 1) {
+      return [1, 1];
+    } else {
+      const alpha = p * (n + nBuckets - 1);
+      const beta = (1 - p) * (n + nBuckets - 1);
+      console.log("alpha, beta", alpha, beta);
+      return [
+        jStat.beta.inv(0.025, alpha, beta),
+        jStat.beta.inv(0.975, alpha, beta),
+      ];
+    }
+  });
+  return bounds;
+}
+
+export default function Elicitation(props) {
+  const condition = props.condition;
+  const bucketNames = bucketsByCondition[condition].buckets;
+  const nBuckets = bucketNames.length;
+
+  const [probs, updateProbs] = useState(Array(nBuckets).fill(1 / nBuckets));
+  const [conf, updateConf] = useState(1);
+
+  const handleProbChange = (i, val) => {
+    let newProbs = [...probs];
+    console.log("raw newProbs", newProbs);
+    if (argmax(probs) == i && probs[i] == 1 && val < probs[i]) {
+      newProbs = newProbs.map((p) => p + 0.001);
+    }
+    console.log("unnormalized newProbs", newProbs);
+    newProbs[i] = val;
+    // normalize probs
+    const sum = newProbs.reduce((a, b) => a + b, 0);
+    console.log(
+      "normalized newProbs",
+      newProbs.map((p) => p / sum),
+    );
+    updateProbs(newProbs.map((p) => p / sum));
+  };
+
+  const rowStyle = {
+    display: "grid",
+    margin: "auto",
+    gridTemplateColumns: `repeat(${nBuckets}, 1fr)`,
+  };
+
+  const itemStyle = {
+    margin: "0 1rem",
+  };
+
+  const bounds = getDirichletBounds(probs, conf, nBuckets);
+
+  return (
+    <div>
+      <h1>Predict the coin distribution</h1>
+      <div className="elicitation-row" style={rowStyle}>
+        {range(nBuckets).map((i) => (
+          <div key={i} style={itemStyle} className="prob-wrapper">
+            <div className="prob-bar-wrapper">
+              <div
+                className="prob-bar"
+                style={{
+                  height: `${probs[i] * 100}%`,
+                  backgroundColor: bucketNames[i],
+                }}
+              />
+              <div
+                className="conf-int"
+                style={{
+                  bottom: `${bounds[i][0] * 100}%`,
+                  top: `${(1 - bounds[i][1]) * 100}%`,
+                }}
+              />
+            </div>
+            <div>
+              {bucketNames[i]}: {(probs[i] * 100).toFixed(0)}%<br />[
+              {(bounds[i][0] * 100).toFixed(0)}%,{" "}
+              {(bounds[i][1] * 100).toFixed(0)}%]
+              <input
+                className="jspsych-slider prob-slider"
+                key={i}
+                type="range"
+                min="0"
+                max="100"
+                value={(probs[i] * 100).toFixed(0)}
+                onChange={(e) => {
+                  handleProbChange(i, e.target.value / 100);
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="confidenceBlock">
+        Confidence:
+        <input
+          key={"conf"}
+          className="jspsych-slider conf-slider"
+          type="range"
+          min="1"
+          max="25"
+          value={conf}
+          onChange={(e) => {
+            const newConf = e.target.value;
+            updateConf(newConf);
+          }}
+        />
+      </div>
+      <button
+        className="jspsych-btn"
+        onClick={() => props.submitFn(probs, conf)}
+      >
+        Submit
+      </button>
+      <div className="elicitationInstructions">
+        <p className="instructions-text">
+          Remember, the shaded region should cover 95% of what you think the
+          probabilty might be. You will earn a bonus if the true probabilities
+          fall in the region, and a larger bonus the smaller the region is.
+        </p>
+        <p className="instructions-text">
+          Press "Submit" when you are happy with your prediction.
+        </p>
+      </div>
+    </div>
+  );
+}

@@ -2,13 +2,19 @@ import { marked } from "marked";
 const consentMd = require("../assets/instructions/consent.md");
 const instructionsMd = require("../assets/instructions/main-instructions.md");
 const testPhaseInstructionsMd = require("../assets/instructions/test-phase-instructions.md");
+const writeMessageMd = require("../assets/instructions/write-message-instructions.md");
 
 const consentRenderer = new marked.Renderer();
 consentRenderer.paragraph = (text) => `<p class="consent-text">${text}</p>`;
 
 const instructionsRenderer = new marked.Renderer();
-instructionsRenderer.paragraph = (text) =>
-  `<p class="instructions-text">${text}</p>`;
+instructionsRenderer.paragraph = (text) => {
+  if (text[0] == "<") {
+    return text;
+  } else {
+    return `<p class="instructions-text">${text}</p>`;
+  }
+};
 
 export const bucketHTML = `
 <img src="assets/images/%choice%-bucket.svg", class="bucket">
@@ -86,16 +92,23 @@ const timeEstimate = 5;
 const basePayment = 1;
 const maxBonus = 1;
 
-export const consentText = marked(consentMd.default, {
+export const consentText = marked(eval("`" + consentMd.default + "`"), {
   renderer: consentRenderer,
 });
 
-const instructionsHtml = marked(instructionsMd.default, {
-  renderer: instructionsRenderer,
-});
-
-export const instructionPages = instructionsHtml.split("<hr>");
+export const getInstructionPages = (messageWritingTime) => {
+  const instructionsHtml = marked(eval("`" + instructionsMd.default + "`"), {
+    renderer: instructionsRenderer,
+  });
+  return instructionsHtml.split("<hr>");
+};
 
 export const testPhaseInstructions = marked(testPhaseInstructionsMd.default, {
   renderer: instructionsRenderer,
 });
+
+export const getWriteMessageInstructions = (messageWritingTime) => {
+  return marked(eval("`" + writeMessageMd.default + "`"), {
+    renderer: instructionsRenderer,
+  });
+};

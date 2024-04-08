@@ -62,3 +62,49 @@
 .bold {
     font-weight: bold;
 }
+
+.prob-bar-wrapper {
+    position: relative;
+    height: 150px;
+    width: 50px;
+    margin: 0 auto;
+    border: 2px solid black;
+}
+
+.prob-bar {
+    position: absolute;
+    bottom: -1px;
+    left: -1px;
+    width: 100%;
+    border: 1px solid black;
+}
+
+.conf-int {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background-color: black;
+    opacity: 0.5;
+}
+
+.prob-slider {
+    margin-top: 1rem;
+}
+
+.prob-wrapper {
+    width: 250px;
+}
+
+.confidenceBlock {
+    width: 250px;
+    margin: 0 auto;
+}
+
+img {
+    margin: 0 auto;
+    max-width: 60ch;
+}
+
+ol {
+    text-align: justify;
+}

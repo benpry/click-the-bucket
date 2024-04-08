@@ -15,7 +15,7 @@ import HtmlButtonResponse from "@jspsych/plugin-html-button-response";
 import HtmlSurveyText from "./survey-text-timed";
 import { initJsPsych } from "jspsych";
 import {
-  instructionPages,
+  getInstructionPages,
   bucketHTML,
   formatFeedback,
   messageConditionTimes,
@@ -23,6 +23,7 @@ import {
   bucketsByCondition,
   consentText,
   testPhaseInstructions,
+  getWriteMessageInstructions,
 } from "./constants";
 import {
   assignToChain,
@@ -35,6 +36,7 @@ import { startTimer } from "./timer";
 import { sampleBucket, renderMessage } from "./utils";
 import { range } from "./utils";
 import { proliferate } from "./proliferate";
+import ElicitDistributionPlugin from "./elicit-distribution";
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -68,6 +70,7 @@ export async function run({
 
   const condition = jsPsych.data.getURLVariable("condition");
   const messageCondition = jsPsych.data.getURLVariable("mC");
+  const messageWritingTime = messageConditionTimes[messageCondition];
   const doLearning = jsPsych.data.getURLVariable("doL");
   const receiveMessage = jsPsych.data.getURLVariable("recM");
   const writeMessage = jsPsych.data.getURLVariable("wM");
@@ -87,12 +90,12 @@ export async function run({
     type: InstructionsPlugin,
     pages: [consentText],
     show_clickable_nav: true,
-    button_label_next: "I consent",
+    button_label_next: "I agree",
   });
 
   timeline.push({
     type: InstructionsPlugin,
-    pages: instructionPages,
+    pages: getInstructionPages(messageWritingTime),
     show_clickable_nav: true,
     on_load: () => {
       if (writeMessage) {
@@ -166,12 +169,9 @@ export async function run({
   }
 
   if (writeMessage) {
-    const messageWritingTime = messageConditionTimes[messageCondition];
     const writeMessageInstructions = {
       type: HtmlButtonResponse,
-      stimulus: `<p>You have completed the learning trials.</p>
-    <p>You will now have ${messageWritingTime} seconds to write a message for the next participant.</p>
-    <p>Your message writing time will begin in 5 seconds</p>`,
+      stimulus: getWriteMessageInstructions(messageWritingTime),
       choices: [],
       trial_duration: 5000,
     };
@@ -191,8 +191,6 @@ export async function run({
       ],
       trial_duration: messageWritingTime * 1000,
       on_finish: function (data) {
-        console.log("write message data");
-        console.log(data);
         sendMessage(chain._id, data.response.message);
       },
     };
@@ -204,25 +202,12 @@ export async function run({
     stimulus: testPhaseInstructions,
     choices: ["Begin"],
   });
-  const testTrial = [
-    {
-      type: HtmlButtonResponse,
-      stimulus: "Click the bucket where you think the coin is",
-      choices: buckets,
-      button_html: bucketHTML,
-    },
-    {
-      type: HtmlButtonResponse,
-      stimulus: "",
-      trial_duration: 1000,
-      choices: [],
-    },
-  ];
-  const testTimeline = {
-    timeline: testTrial,
-    repetitions: 10,
-  };
-  timeline.push(testTimeline);
+
+  // add dependent measure
+  timeline.push({
+    type: ElicitDistributionPlugin,
+    condition: condition,
+  });
 
   const postExperimentSurvey = {
     type: HtmlSurveyText,
