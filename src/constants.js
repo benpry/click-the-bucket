@@ -76,7 +76,7 @@ export const bucketsByCondition = {
   },
 };
 
-const timeEstimate = 5;
+const timeEstimate = 3;
 const basePayment = 1;
 const maxBonus = 1;
 
