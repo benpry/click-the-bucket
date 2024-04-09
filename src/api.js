@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://35.87.51.189:3000";
+const API_BASE_URL = "https://chains-api-21415a7171bd.herokuapp.com";
 
 export async function assignToChain(condition) {
   const response = await fetch(`${API_BASE_URL}/assign/${condition}`, {

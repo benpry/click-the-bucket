@@ -24,7 +24,6 @@ function argmax(arr) {
 }
 
 function getDirichletBounds(probs, n, nBuckets) {
-  console.log("n", n);
   const bounds = probs.map((p) => {
     if (p == 0) {
       return [0, 0];
@@ -52,18 +51,12 @@ export default function Elicitation(props) {
 
   const handleProbChange = (i, val) => {
     let newProbs = [...probs];
-    console.log("raw newProbs", newProbs);
     if (argmax(probs) == i && probs[i] == 1 && val < probs[i]) {
       newProbs = newProbs.map((p) => p + 0.001);
     }
-    console.log("unnormalized newProbs", newProbs);
     newProbs[i] = val;
     // normalize probs
     const sum = newProbs.reduce((a, b) => a + b, 0);
-    console.log(
-      "normalized newProbs",
-      newProbs.map((p) => p / sum),
-    );
     updateProbs(newProbs.map((p) => p / sum));
   };
 

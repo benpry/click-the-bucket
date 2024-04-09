@@ -1,21 +1,8 @@
-import { marked } from "marked";
-const consentMd = require("../assets/instructions/consent.md");
-const teacherInstructionsMd = require("../assets/instructions/teacher-instructions.md");
-const learnerInstructionsMd = require("../assets/instructions/learner-instructions.md");
-const testPhaseInstructionsMd = require("../assets/instructions/test-phase-instructions.md");
-const writeMessageMd = require("../assets/instructions/write-message-instructions.md");
-
-const consentRenderer = new marked.Renderer();
-consentRenderer.paragraph = (text) => `<p class="consent-text">${text}</p>`;
-
-const instructionsRenderer = new marked.Renderer();
-instructionsRenderer.paragraph = (text) => {
-  if (text[0] == "<") {
-    return text;
-  } else {
-    return `<p class="instructions-text">${text}</p>`;
-  }
-};
+import consentHtml from "../assets/instructions/consent.html";
+import teacherInstructionsHtml from "../assets/instructions/teacher-instructions.html";
+import learnerInstructionsHtml from "../assets/instructions/learner-instructions.html";
+import testPhaseInstructionsHtml from "../assets/instructions/test-phase-instructions.html";
+import writeMessageHtml from "../assets/instructions/write-message-instructions.html";
 
 export const bucketHTML = `
 <img src="assets/images/%choice%-bucket.svg", class="bucket">
@@ -93,36 +80,22 @@ const timeEstimate = 5;
 const basePayment = 1;
 const maxBonus = 1;
 
-export const consentText = marked(eval("`" + consentMd.default + "`"), {
-  renderer: consentRenderer,
-});
+export const consentText = eval("`" + consentHtml + "`");
 
 export const getInstructionPages = (writeMessage, messageWritingTime) => {
   if (writeMessage == 1) {
-    const instructionsHtml = marked(
-      eval("`" + teacherInstructionsMd.default + "`"),
-      {
-        renderer: instructionsRenderer,
-      },
-    );
-    return instructionsHtml.split("<hr>");
+    const instructionsHtml = eval("`" + teacherInstructionsHtml + "`");
+    return instructionsHtml.split("<hr/>");
   } else {
-    const instructionsHtml = marked(
-      eval("`" + learnerInstructionsMd.default + "`"),
-      {
-        renderer: instructionsRenderer,
-      },
-    );
-    return instructionsHtml.split("<hr>");
+    const instructionsHtml = eval("`" + learnerInstructionsHtml + "`");
+    return instructionsHtml.split("<hr/>");
   }
 };
 
-export const testPhaseInstructions = marked(testPhaseInstructionsMd.default, {
-  renderer: instructionsRenderer,
-});
+export const testPhaseInstructions = eval(
+  "`" + testPhaseInstructionsHtml + "`",
+);
 
 export const getWriteMessageInstructions = (messageWritingTime) => {
-  return marked(eval("`" + writeMessageMd.default + "`"), {
-    renderer: instructionsRenderer,
-  });
+  return eval("`" + writeMessageHtml + "`");
 };

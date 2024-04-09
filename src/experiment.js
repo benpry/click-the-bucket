@@ -55,8 +55,7 @@ export async function run({
 
   const jsPsych = initJsPsych({
     on_finish: function (data) {
-      if (data.last(1).values()[0].failed) {
-      } else {
+      if (!data.last(1).values()[0].failed) {
         proliferate.submit({
           trials: data.values(),
         });
@@ -90,10 +89,9 @@ export async function run({
   });
 
   timeline.push({
-    type: InstructionsPlugin,
-    pages: [consentText],
-    show_clickable_nav: true,
-    button_label_next: "I agree",
+    type: HtmlButtonResponse,
+    stimulus: consentText,
+    choices: ["I agree"],
   });
 
   timeline.push({
@@ -101,7 +99,7 @@ export async function run({
     pages: getInstructionPages(writeMessage, messageWritingTime),
     show_clickable_nav: true,
     on_load: () => {
-      if (writeMessage) {
+      if (writeMessage == 1) {
         assignToChain(messageCondition).then((c) => {
           if (c == 404) {
             jsPsych.endExperiment(
@@ -113,7 +111,7 @@ export async function run({
           }
         });
       } else {
-        assignToChainNoBusy(condition).then((c) => {
+        assignToChainNoBusy(messageCondition).then((c) => {
           if (c == 404) {
             jsPsych.endExperiment(
               "Unfortunately there is no space in the experiment at this time. We apologize for the inconvenience.",
@@ -127,7 +125,7 @@ export async function run({
     },
   });
 
-  if (receiveMessage) {
+  if (receiveMessage == 1) {
     timeline.push({
       type: HtmlButtonResponse,
       stimulus: () => {
@@ -145,10 +143,15 @@ export async function run({
         };
       },
       choices: ["Continue"],
+      on_finish: () => {
+        if (writeMessage == 0) {
+          updateReads(chain._id);
+        }
+      },
     });
   }
 
-  if (doLearning) {
+  if (doLearning == 1) {
     timeline.push({
       type: HtmlButtonResponse,
       stimulus: `<p>You will now start the learning trials. Press "continue" to begin.</p>`,
@@ -194,16 +197,13 @@ export async function run({
     timeline.push(learningTimeline);
   }
 
-  if (writeMessage) {
+  if (writeMessage == 1) {
     const writeMessageInstructions = {
       type: HtmlButtonResponse,
       stimulus: getWriteMessageInstructions(messageWritingTime),
       choices: [],
       trial_duration: 5000,
     };
-    timeline.push(writeMessageInstructions);
-    console.log("message writing time");
-    console.log(messageWritingTime);
     const writeMessageTrial = {
       type: HtmlSurveyText,
       questions: [
